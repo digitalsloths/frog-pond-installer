@@ -112,7 +112,7 @@ function('void drawHomeStepCount(){',r'''void drawHomeStepCount(){
   gfx->setTextColor(WHITE);gfx->setCursor(240,12);gfx->print(frogSteps);
 }''')
 # One single-touch draggable volume slider on the SETTINGS page, stored in NVS.
-replace_once('I2SClass frogI2S;', 'volatile uint8_t frogVolumePct = 72;\nuint8_t frogVolumeApplied = 255;\nI2SClass frogI2S;', "volume shared with audio task")
+replace_once('Screen screen = FACE;', 'volatile uint8_t frogVolumePct = 72;\nuint8_t frogVolumeApplied = 255;\nScreen screen = FACE;', "early volume globals")
 replace_once('es8311_voice_volume_set(codec,72,NULL);',
              'es8311_voice_volume_set(codec,frogVolumePct,NULL);',"audio initial volume")
 replace_once('while (true) {\n    if (frogCroakRequested) {',
@@ -187,7 +187,7 @@ s=s[:pos]+'''  } else if (screen == SETTINGS) {
       changedScreen=true;
     }
 '''+s[q:]
-for required in ('drawIsolatedHatFrame','frogVolumePct','openScreen(FACE); // Save','const char* labels[] = {"GAMES","APPS","SETTINGS"};',
+# Remove any loop-local redraw-flag references inserted into callbacks.\ns=s.replace('changedScreen=true;', '/* settings refreshes at 125ms intervals */')\nfor required in ('drawIsolatedHatFrame','frogVolumePct','openScreen(FACE); // Save','const char* labels[] = {"GAMES","APPS","SETTINGS"};',
                  'drawStepIcon(193,10,1,WHITE)','prefs.getUChar("frogHat",255)'):
  if required not in s:raise RuntimeError("Missing expected V16 behavior: "+required)
 p.write_text(s)

@@ -146,7 +146,7 @@ void drawTestIdleFrogFrame(uint32_t now,int x,int y,int scale,uint8_t hat){
 replace('void drawFace(uint32_t now) {',idle+'\nvoid drawFace(uint32_t now) {',"new idle renderer")
 a,b=span('void drawFace(uint32_t now) {')
 section=s[a:b]
-calls=list(re.finditer(r'drawFrogSprite\\s*\\(([^;]+?)\\)\\s*;',section))
+calls=list(re.finditer(r'drawFrogSprite\s*\(([^;]+?)\)\s*;',section))
 if len(calls)!=1:raise RuntimeError(f"Expected one home sprite draw call, found {len(calls)}")
 call=calls[0]
 args=[v.strip() for v in call.group(1).split(',')]

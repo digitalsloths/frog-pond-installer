@@ -263,7 +263,7 @@ swap('  frogVolumePct = min((uint8_t)100,prefs.getUChar("frogVolume",72));',
 swap('  Serial.println("Ready: Frog Pond V7");',
      '  pondMountSD();pondRtcReady=pondReadClock();\n  Serial.println("Ready: Frog Pond V17");',"scene init")
 # The existing Clock app now reads the same RTC and 12/24 setting.
-clockDispatch=re.search(r'else if \\(screen == CLOCK\\) (drawClock[^;]*);',s)
+clockDispatch=re.search(r'else if \(screen == CLOCK\) (drawClock[^;]*);',s)
 if not clockDispatch:raise RuntimeError("Clock draw dispatch not found")
 s=s[:clockDispatch.start()]+"else if (screen == CLOCK) pondDrawClock();"+s[clockDispatch.end():]
 swap('    else if (screen == SETTINGS) drawSettingsMenu();',

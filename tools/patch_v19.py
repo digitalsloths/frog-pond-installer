@@ -147,7 +147,9 @@ replace('void drawFace(uint32_t now) {',idle+'\nvoid drawFace(uint32_t now) {',"
 a,b=span('void drawFace(uint32_t now) {')
 section=s[a:b]
 calls=list(re.finditer(r'drawFrogSpriteStyled\s*\(([^;]+?)\)\s*;',section))
-if len(calls)!=1:\n print("HOME_RENDER_DIAGNOSTIC_START\\n"+section[:7000]+"\\nHOME_RENDER_DIAGNOSTIC_END",flush=True)\n raise RuntimeError(f"Expected one home frog draw call, found {len(calls)}")
+if len(calls)!=1:
+ print("HOME_RENDER_DIAGNOSTIC_START\\n"+section[:7000]+"\\nHOME_RENDER_DIAGNOSTIC_END",flush=True)
+ raise RuntimeError(f"Expected one home frog draw call, found {len(calls)}")
 call=calls[0]
 args=[v.strip() for v in call.group(1).split(',')]
 if len(args)!=6:raise RuntimeError("Home sprite draw arguments changed: "+repr(args))

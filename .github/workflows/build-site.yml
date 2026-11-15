@@ -61,7 +61,7 @@ jobs:
           set -euo pipefail
           python3 tools/package_v6.py
           test -s site/latest.json
-          test -s site/releases/v9.0.0-beta/frogpond.bin
+          test -s site/releases/v10.0.0-beta/frogpond.bin
       - uses: actions/upload-artifact@v4
         with:
           name: frogpond-v10-beta-compiled-website

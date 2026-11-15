@@ -24,6 +24,16 @@ jobs:
           python3 tools/patch_v6.py v5.zip firmware
           python3 tools/patch_v7.py firmware
           python3 tools/patch_v8.py firmware
+          python3 - <<'PY'
+          from pathlib import Path
+          s=next(Path('firmware').rglob('*.ino')).read_text().splitlines()
+          names=['void drawFrogHat(', 'void drawFrogSpriteStyled(', 'void drawPersonalize(', 'void tapped(', 'void pollTouch(', 'void openScreen(', 'void drawFace(', 'void render(', 'void loop(', 'frogHatNames', 'frogHat', 'frogTapPending', 'FROG_JUMP_ACTION']
+          for key in names:
+            matches=[i for i,line in enumerate(s) if key in line]
+            for i in matches[:4]:
+              print('SOURCE BLOCK',key,'line',i+1)
+              print('\\n'.join(f'{j+1}: {s[j]}' for j in range(max(0,i-5),min(len(s),i+65))))
+          PY
           test -s firmware/FrogPond_175_PhysicalSteps_V1/FrogPond_175_PhysicalSteps_V1.ino
       - uses: actions/checkout@v4
         with:

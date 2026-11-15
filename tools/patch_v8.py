@@ -211,7 +211,7 @@ replace('''  } else if (screen == SETTINGS || screen == GAMES) {
 replace('''  } else if (screen == GAMES || screen == SETTINGS || screen == APPS_HUB) {
     if (direction > 0) openScreen(APPS);
 ''','''  } else if (screen == FROG_HOP) {
-    if (direction > 0) openScreen(GAMES);
+    if (direction < 0) openScreen(GAMES);
   } else if (screen == GAMES || screen == SETTINGS || screen == APPS_HUB) {
     if (direction > 0) openScreen(APPS);
 ''','Frog Hop exit swipe')

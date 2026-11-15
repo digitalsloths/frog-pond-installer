@@ -152,7 +152,7 @@ start=s.index('void saveFrogState() {')
 end=s.index('void startFrogHop(',start)
 powerHelpers=s[start:end]
 s=s[:start]+s[end:]
-anchor='uint8_t previewFrogColor = 0, previewFrogHat = 0;'
+anchor='uint32_t frogSteps = 0; // Physical walking steps from QMI8658 accelerometer.'
 replace(anchor,anchor+'\n'+powerHelpers,'power helper placement')
 # Loop power guard, needed to preserve all NVS and avoid drawing in standby
 replace('  pollPhysicalSteps(now);\n  pollTouch(now);',

@@ -187,7 +187,9 @@ s=s[:pos]+'''  } else if (screen == SETTINGS) {
       changedScreen=true;
     }
 '''+s[q:]
-# Remove any loop-local redraw-flag references inserted into callbacks.\ns=s.replace('changedScreen=true;', '/* settings refreshes at 125ms intervals */')\nfor required in ('drawIsolatedHatFrame','frogVolumePct','openScreen(FACE); // Save','const char* labels[] = {"GAMES","APPS","SETTINGS"};',
+# Remove any loop-local redraw-flag references inserted into callbacks.
+s=s.replace('changedScreen=true;', '/* settings refreshes at 125ms intervals */')
+for required in ('drawIsolatedHatFrame','frogVolumePct','openScreen(FACE); // Save','const char* labels[] = {"GAMES","APPS","SETTINGS"};',
                  'drawStepIcon(193,10,1,WHITE)','prefs.getUChar("frogHat",255)'):
  if required not in s:raise RuntimeError("Missing expected V16 behavior: "+required)
 p.write_text(s)

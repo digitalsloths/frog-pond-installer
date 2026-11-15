@@ -1,4 +1,4 @@
-name: Build and publish Frog Pond V16 hats and menu
+name: Build and publish Frog Pond V17 RTC settings and backgrounds
 on:
   push:
     branches: [main]
@@ -32,6 +32,7 @@ jobs:
           python3 tools/patch_v14.py firmware
           python3 tools/patch_v15.py firmware
           python3 tools/patch_v16.py firmware
+          python3 tools/patch_v17.py firmware
 
           test -s firmware/FrogPond_175_PhysicalSteps_V1/FrogPond_175_PhysicalSteps_V1.ino
       - uses: actions/checkout@v4
@@ -68,10 +69,10 @@ jobs:
           set -euo pipefail
           python3 tools/package_v6.py
           test -s site/latest.json
-          test -s site/releases/v16.0.0-beta/frogpond.bin
+          test -s site/releases/v17.0.0-beta/frogpond.bin
       - uses: actions/upload-artifact@v4
         with:
-          name: frogpond-v16-visual-website
+          name: frogpond-v17-settings-website
           path: site/
       - uses: actions/configure-pages@v5
         with:

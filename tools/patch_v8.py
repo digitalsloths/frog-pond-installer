@@ -297,5 +297,17 @@ replace('  frogSteps = prefs.getUInt("frogSteps", 0);',
 'game high-score load')
 # Stop old double tap simulation; single tap still delayed slightly but always croaks.
 replace('constexpr uint32_t FROG_DOUBLE_TAP_MS = 485;','constexpr uint32_t FROG_DOUBLE_TAP_MS = 120;', 'single-tap confirmation delay')
+# Keep the established frog jump-frame array FROG_HOP distinct from the game screen.
+s=s.replace('APPS_HUB, FROG_HOP };','APPS_HUB, FROGHOP_GAME };')
+s=s.replace('screen == FROG_HOP','screen == FROGHOP_GAME')
+s=s.replace('openScreen(FROG_HOP)','openScreen(FROGHOP_GAME)')
+# Arduino generates function prototypes at the first function definition.
+# Move the preexisting Mood enum ahead of the new game and power helpers.
+moodStart=s.index('enum Mood : uint8_t {')
+moodEnd=s.index(';',moodStart)+1
+moodDecl=s[moodStart:moodEnd]
+s=s[:moodStart]+s[moodEnd:]
+firstFunction=s.index('Screen screen = FACE;')
+s=s[:firstFunction]+moodDecl+'\n'+s[firstFunction:]
 path.write_text(s)
 print("V8 patch completed",path,len(s))

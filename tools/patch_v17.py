@@ -75,7 +75,7 @@ void pondMountSD(){
 }
 void pondSelectScene(int index){
  if(index==sceneLoaded)return;
- sceneLoaded=index;
+ sceneLoaded=-1;
  if(!pondSD)return;
  if(!sceneRGB)sceneRGB=(uint16_t*)ps_malloc(466*466*2);
  if(!sceneRGB)return;
@@ -84,7 +84,8 @@ void pondSelectScene(int index){
  if(!file || file.size()!=466*466*2){if(file)file.close();Serial.printf("POND scene missing %s\n",path.c_str());return;}
  size_t got=file.readBytes((char*)sceneRGB,466*466*2);
  file.close();
- if(got!=466*466*2)Serial.println("POND scene read incomplete");
+ if(got!=466*466*2){Serial.println("POND scene read incomplete");return;}
+ sceneLoaded=index;
 }
 void pondSceneDraw(uint32_t now){
  if(!rtcPollAt || now-rtcPollAt>=30000){
@@ -102,7 +103,7 @@ void pondEditOpen(){
 }
 void pondDateChange(int which,int step){
  if(which==0)editDate.month=1+(editDate.month-1+12+step)%12;
- if(which==1)editDate.day=1+(editDate.day-1+31+step)%pondMonthDays(editDate.year,editDate.month);
+ if(which==1)editDate.day=1+(editDate.day-1+pondMonthDays(editDate.year,editDate.month)+step)%pondMonthDays(editDate.year,editDate.month);
  if(which==2)editDate.year=2020+(editDate.year-2020+80+step)%80;
  if(which==3)editDate.hour=(editDate.hour+24+step)%24;
  if(which==4)editDate.minute=(editDate.minute+60+step)%60;
@@ -138,6 +139,19 @@ void pondDrawTime(){
  centered(clock24h?"24 HOUR":(editDate.hour>=12?"12 HOUR PM":"12 HOUR AM"),233,313,2,WHITE);
  centeredButton(150,375,166,57,dateSaveError?"RTC ERROR":"SAVE",0x07E0);
  centered("SWIPE EITHER WAY TO RETURN",233,450,1,GRAY);
+}
+void pondDrawClock(){
+ gfx->fillScreen(0x0863);
+ centered("CLOCK",233,91,3,WHITE);
+ if(!pondReadClock()){centered("SET TIME IN SETTINGS",233,234,2,WHITE);return;}
+ int h=realDate.hour;bool pm=h>=12;
+ if(!clock24h)h=h%12?h%12:12;
+ char buf[32];snprintf(buf,sizeof(buf),"%02d:%02d",h,realDate.minute);
+ centered(String(buf),233,213,4,WHITE);
+ if(!clock24h)centered(pm?"PM":"AM",233,284,2,WHITE);
+ snprintf(buf,sizeof(buf),"%02d/%02d/%04d",realDate.month,realDate.day,realDate.year);
+ centered(String(buf),233,329,2,WHITE);
+ centered("SWIPE RIGHT TO RETURN",233,423,1,GRAY);
 }
 void pondDrawSettings(){
  gfx->fillScreen(0x0863);
@@ -248,6 +262,10 @@ swap('  frogVolumePct = min((uint8_t)100,prefs.getUChar("frogVolume",72));',
      '  frogVolumePct = min((uint8_t)100,prefs.getUChar("frogVolume",72));\n  ambientVolumePct=min((uint8_t)100,prefs.getUChar("ambientVolume",40));\n  clock24h=prefs.getBool("24hour",true);',"settings restore")
 swap('  Serial.println("Ready: Frog Pond V7");',
      '  pondMountSD();pondRtcReady=pondReadClock();\n  Serial.println("Ready: Frog Pond V17");',"scene init")
+# The existing Clock app now reads the same RTC and 12/24 setting.
+clockDispatch=re.search(r'else if \\(screen == CLOCK\\) (drawClock[^;]*);',s)
+if not clockDispatch:raise RuntimeError("Clock draw dispatch not found")
+s=s[:clockDispatch.start()]+"else if (screen == CLOCK) pondDrawClock();"+s[clockDispatch.end():]
 swap('    else if (screen == SETTINGS) drawSettingsMenu();',
      '    else if (screen == SETTINGS) drawSettingsMenu();\n    else if (screen == TIME_SETTINGS) pondDrawTime();',"screen renderer")
 swap('redraw = changedScreen || (screen == SETTINGS && now-prevFrameAt >= 125) || (screen == APPS && frogStepsRendered != frogSteps);',

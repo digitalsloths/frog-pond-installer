@@ -20,3 +20,6 @@ GitHub Actions must show a green build and successful Pages deployment before th
 4. After flashing, press RESET.
 
 The user-provided V10 source ZIP remains separate until its assets are imported; firmware is not physically hardware-tested.
+
+## V14 appearance update
+The cloud-built installer now includes the shorter Personalize title, an unboxed footprint step counter, brighter floating pond particles, and a transparent frog preview. Built firmware must pass GitHub Actions before publishing.

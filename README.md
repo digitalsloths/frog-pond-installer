@@ -1,20 +1,22 @@
-# Frog Pond ESP32-S3 USB installer
+# Frog Pond ESP32-S3 1.75-inch Browser Installer
 
-Firmware and browser installer for the **standard Waveshare ESP32-S3 Touch AMOLED 1.75-inch**. Not compatible with the 1.43-inch or 1.75C variants.
+**Installer:** https://digitalsloths.github.io/frog-pond-installer/
 
-## Install
-Once GitHub Pages is enabled and the workflow has succeeded, open **https://digitalsloths.github.io/frog-pond-installer/** in desktop Chrome/Edge with a USB-C data cable and click **Connect & install**. The website uses ESP Web Tools 10.1.0 and Web Serial to flash precompiled ESP32-S3 firmware. It does not compile firmware in the browser.
+**Cloud build:** https://github.com/digitalsloths/frog-pond-installer/actions
 
-## Automated releases
-The workflow under `.github/workflows/build-site.yml` downloads the existing **V5 source** archive, applies `tools/patch_v6.py`, fetches Waveshare Arduino libraries, installs Arduino ESP32 3.3.10, compiles using 16 MB flash and OPI PSRAM, validates the required binaries and packages a versioned manifest. On success it deploys the exact contents of `site/` via GitHub Pages. Failed builds do not publish.
+This repository builds the Frog Pond firmware with GitHub Actions and publishes a browser-based USB installer using ESP Web Tools. Chrome or Edge on a desktop and a USB-C data cable are required. This is for the **standard Waveshare ESP32-S3 Touch AMOLED 1.75-inch**, not the 1.43-inch or 1.75C.
 
-**V6 is currently beta and must be tested on physical hardware.** The external V5 source archive and upstream Waveshare repository are build dependencies. A more reproducible follow-up is to check source and pinned library versions into this repository. Physical step counting still requires calibration.
+## V10 beta status
 
-## GitHub Pages (one-time setup)
-Repository **Settings → Pages → Build and deployment → Source: GitHub Actions**. Then inspect the workflow under **Actions**, or use **Run workflow**. The installer page won't show **Connect & install** until compilation and deployment complete successfully.
+The cloud workflow now applies `tools/patch_v10.py` after the V6–V9 patches. It adds drifting particles to the pond, restores the home step counter, and corrects the hop sequence. The V9 hat-selection UI and verified persistent Save logic are retained. **The complete new 32×32 animated hat sprite sheets from the separate V10 source bundle have not yet been added to this repository.** Do not assume those sprite fixes have been deployed.
 
-## V6 changes
-Navigation swipe fix (Home left = Personalize; Home right = Games / Settings), touchscreen release debounce, hat touch targets, Save feedback and persistent values, and removal of Personalize's Back button. The original MOST startup image remains.
+GitHub Actions must show a green build and successful Pages deployment before the V10 beta is flashable; a code commit by itself does not update the live firmware.
 
-## Flash manifest
-ESP32-S3; bootloader `0x0`, partitions `0x8000`, boot_app0 `0xe000`, application `0x10000`. The website checks files before activating the flash control.
+## How to flash
+
+1. Check that the latest workflow in **Actions** succeeded.
+2. Open the installer URL above in desktop Chrome or Edge.
+3. Connect the ESP32-S3 by USB-C data cable, choose **Connect & install** and select the board's serial port.
+4. After flashing, press RESET.
+
+The user-provided V10 source ZIP remains separate until its assets are imported; firmware is not physically hardware-tested.

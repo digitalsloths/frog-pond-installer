@@ -1,4 +1,4 @@
-name: Build and publish Frog Pond V15 touch coordinate fix
+name: Build and publish Frog Pond V16 hats and menu
 on:
   push:
     branches: [main]
@@ -31,6 +31,7 @@ jobs:
           python3 tools/patch_v13.py firmware
           python3 tools/patch_v14.py firmware
           python3 tools/patch_v15.py firmware
+          python3 tools/patch_v16.py firmware
 
           test -s firmware/FrogPond_175_PhysicalSteps_V1/FrogPond_175_PhysicalSteps_V1.ino
       - uses: actions/checkout@v4
@@ -43,6 +44,7 @@ jobs:
           set -euo pipefail
           python3 tools/make_croak_header.py firmware
           python3 tools/make_frog_hop_header.py firmware
+          python3 tools/make_isolated_hats.py firmware/FrogPond_175_PhysicalSteps_V1
           cp vendor/waveshare/examples/arduino/08_ES8311/es8311.c firmware/FrogPond_175_PhysicalSteps_V1/
           cp vendor/waveshare/examples/arduino/08_ES8311/es8311.h firmware/FrogPond_175_PhysicalSteps_V1/
           cp vendor/waveshare/examples/arduino/08_ES8311/es8311_reg.h firmware/FrogPond_175_PhysicalSteps_V1/
@@ -66,10 +68,10 @@ jobs:
           set -euo pipefail
           python3 tools/package_v6.py
           test -s site/latest.json
-          test -s site/releases/v15.0.0-beta/frogpond.bin
+          test -s site/releases/v16.0.0-beta/frogpond.bin
       - uses: actions/upload-artifact@v4
         with:
-          name: frogpond-v15-visual-website
+          name: frogpond-v16-visual-website
           path: site/
       - uses: actions/configure-pages@v5
         with:

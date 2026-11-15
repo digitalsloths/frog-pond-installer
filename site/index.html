@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Frog Pond — ESP32-S3 USB Installer</title>
+<script type="module" src="https://unpkg.com/esp-web-tools@10.1.0/dist/web/install-button.js?module"></script>
+<style>
+:root{font-family:system-ui,sans-serif;color:#eef7e7;background:#10251c}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0%,#28523c,#10251c 65%)}main{max-width:700px;margin:auto;padding:48px 18px}header{text-align:center}h1{font-size:clamp(44px,9vw,72px);margin:6px 0;color:#c8ec9d}h2{font-size:22px}p,li{line-height:1.6;color:#cbdacd}section{background:#183a2b;border:1px solid #4b8062;border-radius:20px;padding:26px;margin:24px 0}.pill{color:#c1e4a2;font-size:12px;letter-spacing:.06em}button{border:0;border-radius:12px;padding:17px 24px;background:#c8ec9d;color:#173222;font-size:17px;font-weight:700;cursor:pointer}button:focus-visible{outline:3px solid white;outline-offset:3px}#installer{display:none;margin-top:20px}#status{background:#284a38;padding:16px;border-radius:12px;color:#ecf6db}small{color:#acbdae}a{color:#c8ec9d}
+</style>
+</head>
+<body><main>
+<header><div style="font-size:64px">🐸</div><div class="pill">WAVESHARE ESP32-S3 · 1.75-INCH AMOLED</div><h1>Frog Pond</h1><p>Install firmware straight from a browser. No Arduino IDE needed.</p></header>
+<section><h2>USB firmware installer</h2><p>Connect the ESP32-S3 using a USB-C data cable. Use desktop Chrome or Edge to choose the device's serial port.</p>
+<div id="status" role="status">Checking for compiled firmware…</div>
+<div id="installer"><esp-web-install-button id="install-button"><button slot="activate">Connect &amp; install</button><span slot="unsupported">Use desktop Chrome or Microsoft Edge.</span><span slot="not-allowed">Open over HTTPS to enable USB serial.</span></esp-web-install-button></div>
+<p><small>Only for the standard Waveshare ESP32-S3 Touch AMOLED 1.75-inch model. Do not flash 1.43-inch, 1.75C, or ESP32-C3 boards.</small></p></section>
+<section><h2>Instructions</h2><ol><li>Plug your board into your Windows PC with a USB-C data cable.</li><li>Open this webpage in desktop Chrome or Edge.</li><li>Click <strong>Connect &amp; install</strong> and select the right COM port.</li><li>After flashing, press RESET without holding BOOT.</li></ol><p><small>If a serial port is unavailable, hold BOOT, briefly press RESET, release BOOT, and retry.</small></p></section>
+<section><h2>Frog Pond V6</h2><p>Includes saved frog colors and hats, Personalize menu, Games/Settings, corrected swipe/touch handling, a walking step counter, single-tap croak with heart, double-tap jump, and the existing MOST splash.</p><p><small>V6 is a beta. Build verification does not replace testing on the physical board.</small></p></section>
+</main>
+<script>
+(async()=>{
+  const status=document.querySelector('#status');
+  try {
+    if (!window.isSecureContext) throw Error('HTTPS is required.');
+    if (!('serial' in navigator)) throw Error('Use desktop Chrome or Edge for USB flashing.');
+    const latestResponse=await fetch('./latest.json',{cache:'no-store'});
+    if (!latestResponse.ok) throw Error('The firmware build has not been published yet.');
+    const latest=await latestResponse.json();
+    if (!/^releases\/[\w.-]+\/manifest\.json$/.test(latest.manifest)) throw Error('Invalid firmware release path.');
+    const manifestUrl=new URL(latest.manifest,location.href);
+    const r=await fetch(manifestUrl,{cache:'no-store'});
+    if (!r.ok) throw Error('Firmware manifest is unavailable.');
+    const manifest=await r.json();
+    const build=manifest.builds?.find(b=>b.chipFamily==='ESP32-S3');
+    if (!build || JSON.stringify(build.parts?.map(p=>p.offset))!=='[0,32768,57344,65536]') throw Error('Incorrect ESP32-S3 flash layout.');
+    for(const part of build.parts){
+      const file=new URL(part.path,manifestUrl);
+      const res=await fetch(file,{method:'HEAD',cache:'no-store'});
+      if (!res.ok) throw Error('Firmware file missing: '+part.path);
+    }
+    document.querySelector('#install-button').setAttribute('manifest',manifestUrl.href);
+    document.querySelector('#installer').style.display='block';
+    status.textContent='Ready: '+latest.version+' — connect your ESP32-S3 to install.';
+  }catch(err){status.textContent='Installer unavailable: '+err.message;}
+})();
+</script></body></html>

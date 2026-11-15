@@ -1,4 +1,4 @@
-name: Build and publish Frog Pond V14 Personalize and pond HUD
+name: Build and publish Frog Pond V15 touch coordinate fix
 on:
   push:
     branches: [main]
@@ -30,6 +30,7 @@ jobs:
           python3 tools/patch_v12.py firmware
           python3 tools/patch_v13.py firmware
           python3 tools/patch_v14.py firmware
+          python3 tools/patch_v15.py firmware
 
           test -s firmware/FrogPond_175_PhysicalSteps_V1/FrogPond_175_PhysicalSteps_V1.ino
       - uses: actions/checkout@v4
@@ -65,10 +66,10 @@ jobs:
           set -euo pipefail
           python3 tools/package_v6.py
           test -s site/latest.json
-          test -s site/releases/v14.0.0-beta/frogpond.bin
+          test -s site/releases/v15.0.0-beta/frogpond.bin
       - uses: actions/upload-artifact@v4
         with:
-          name: frogpond-v14-visual-website
+          name: frogpond-v15-visual-website
           path: site/
       - uses: actions/configure-pages@v5
         with:

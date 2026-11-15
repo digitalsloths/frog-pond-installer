@@ -165,6 +165,13 @@ s=s.replace(needle,'''  if(!down && fingerDown && screen==SETTINGS && downY>=199
     return;
   }
 '''+needle,1)
+# Screen redraw flag is local to loop(); pollTouch cannot write it.
+# Repaint SETTINGS periodically while the slider is being dragged.
+s=s.replace('changedScreen=true;', '/* redraw via SETTINGS timer */')
+redraw_anchor='redraw = changedScreen || (screen == APPS && frogStepsRendered != frogSteps);'
+if redraw_anchor not in s: raise RuntimeError("settings redraw anchor missing")
+s=s.replace(redraw_anchor,
+            'redraw = changedScreen || (screen == SETTINGS && now-prevFrameAt >= 125) || (screen == APPS && frogStepsRendered != frogSteps);',1)
 # Standard taps in settings should also adjust the slider (in addition to drag).
 needle='  } else if (screen == SETTINGS) {'
 start=s.index('void tapped(int x, int y) {')

@@ -1,4 +1,4 @@
-name: Build and publish Frog Pond V9
+name: Build and publish Frog Pond V10 beta
 on:
   push:
     branches: [main]
@@ -25,6 +25,7 @@ jobs:
           python3 tools/patch_v7.py firmware
           python3 tools/patch_v8.py firmware
           python3 tools/patch_v9.py firmware
+          python3 tools/patch_v10.py firmware
 
           test -s firmware/FrogPond_175_PhysicalSteps_V1/FrogPond_175_PhysicalSteps_V1.ino
       - uses: actions/checkout@v4
@@ -63,7 +64,7 @@ jobs:
           test -s site/releases/v9.0.0-beta/frogpond.bin
       - uses: actions/upload-artifact@v4
         with:
-          name: frogpond-v9-compiled-website
+          name: frogpond-v10-beta-compiled-website
           path: site/
       - uses: actions/configure-pages@v5
         with:

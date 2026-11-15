@@ -146,19 +146,18 @@ void drawTestIdleFrogFrame(uint32_t now,int x,int y,int scale,uint8_t hat){
 replace('void drawFace(uint32_t now) {',idle+'\nvoid drawFace(uint32_t now) {',"new idle renderer")
 a,b=span('void drawFace(uint32_t now) {')
 section=s[a:b]
-calls=list(re.finditer(r'drawFrogSpriteStyled\s*\(([^;]+?)\)\s*;',section))
-if len(calls)!=1:
- print("HOME_RENDER_DIAGNOSTIC_START\\n"+section[:7000]+"\\nHOME_RENDER_DIAGNOSTIC_END",flush=True)
- raise RuntimeError(f"Expected one home frog draw call, found {len(calls)}")
+calls=list(re.finditer(r'drawFrogSprite\\s*\\(([^;]+?)\\)\\s*;',section))
+if len(calls)!=1:raise RuntimeError(f"Expected one home sprite draw call, found {len(calls)}")
 call=calls[0]
 args=[v.strip() for v in call.group(1).split(',')]
-if len(args)!=6:raise RuntimeError("Home sprite draw arguments changed: "+repr(args))
-# Only green frog idle is replaced for this temporary visual test; other colors,
-# jumping and croaking continue using their existing artwork and actions.
-replacement=f'''if(selectedFrogColor==0 && (!frogActionAt || (uint32_t)(now-frogActionAt)>1400)){{
+if len(args)!=4:raise RuntimeError("Home sprite draw arguments changed: "+repr(args))
+# Use the uploaded idle strip only when green and not croaking/jumping.
+# Preserve existing action animations, all original color assets and the hats
+# on every home frame (the previous bare-frog call did not draw hats).
+replacement=f'''if(selectedFrogColor==0 && !frogActionPlaying(now)){{
     drawTestIdleFrogFrame(now,{args[1]},{args[2]},{args[3]},selectedFrogHat);
   }}else{{
-    {call.group(0)}
+    drawFrogSpriteStyled({args[0]},{args[1]},{args[2]},{args[3]},selectedFrogColor,selectedFrogHat);
   }}'''
 section=section[:call.start()]+replacement+section[call.end():]
 s=s[:a]+section+s[b:]

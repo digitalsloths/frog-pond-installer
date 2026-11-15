@@ -1,4 +1,4 @@
-name: Build and publish Frog Pond V19 two-page time and idle test
+name: Build and publish Frog Pond V20 aligned hats and back arrows
 on:
   push:
     branches: [main]
@@ -35,6 +35,7 @@ jobs:
           python3 tools/patch_v17.py firmware
           python3 tools/patch_v18.py firmware
           python3 tools/patch_v19.py firmware
+          python3 tools/patch_v20.py firmware
 
           test -s firmware/FrogPond_175_PhysicalSteps_V1/FrogPond_175_PhysicalSteps_V1.ino
       - uses: actions/checkout@v4
@@ -72,10 +73,10 @@ jobs:
           set -euo pipefail
           python3 tools/package_v6.py
           test -s site/latest.json
-          test -s site/releases/v19.0.0-beta/frogpond.bin
+          test -s site/releases/v20.0.0-beta/frogpond.bin
       - uses: actions/upload-artifact@v4
         with:
-          name: frogpond-v19-time-idle-website
+          name: frogpond-v20-hats-back-website
           path: site/
       - uses: actions/configure-pages@v5
         with:

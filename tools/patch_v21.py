@@ -287,12 +287,13 @@ swap('  if(frogSwipeJumpConsumed){frogSwipeJumpConsumed=false;return;}',
   if(frogSwipeJumpConsumed){frogSwipeJumpConsumed=false;return;}''',"pocket watch downward swipe")
 # Screens need periodic refresh to show Echo playback/pause, and analog watch time.
 anchor='  } else if (screen == FROGHOP_GAME) {\n    interval=65;'
-swap(anchor,'''  } else if (screen == ECHO_GAME) {
+if s.count(anchor)<1:raise RuntimeError("Missing old game redraw branch")
+s=s.replace(anchor,'''  } else if (screen == ECHO_GAME) {
     interval=85; redraw=changedScreen||now-prevFrameAt>=85;
   } else if (screen == POCKET_WATCH) {
     interval=1000; redraw=changedScreen||now-prevFrameAt>=1000;
   } else if (screen == FROGHOP_GAME) {
-    interval=65;''',"new redraw cases")
+    interval=65;''',1)
 swap('    else if (screen == GAMES) drawEmptyGames();',
 '''    else if (screen == GAMES) drawEmptyGames();
     else if (screen == ECHO_GAME) echoDraw(now);

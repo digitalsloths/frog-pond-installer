@@ -1,4 +1,4 @@
-name: Build and publish Frog Pond V18 personalization save and backgrounds
+name: Build and publish Frog Pond V19 two-page time and idle test
 on:
   push:
     branches: [main]
@@ -34,6 +34,7 @@ jobs:
           python3 tools/patch_v16.py firmware
           python3 tools/patch_v17.py firmware
           python3 tools/patch_v18.py firmware
+          python3 tools/patch_v19.py firmware
 
           test -s firmware/FrogPond_175_PhysicalSteps_V1/FrogPond_175_PhysicalSteps_V1.ino
       - uses: actions/checkout@v4
@@ -47,6 +48,7 @@ jobs:
           python3 tools/make_croak_header.py firmware
           python3 tools/make_frog_hop_header.py firmware
           python3 tools/make_isolated_hats.py firmware/FrogPond_175_PhysicalSteps_V1
+          python3 tools/make_idle_frog_header.py firmware/FrogPond_175_PhysicalSteps_V1
           cp vendor/waveshare/examples/arduino/08_ES8311/es8311.c firmware/FrogPond_175_PhysicalSteps_V1/
           cp vendor/waveshare/examples/arduino/08_ES8311/es8311.h firmware/FrogPond_175_PhysicalSteps_V1/
           cp vendor/waveshare/examples/arduino/08_ES8311/es8311_reg.h firmware/FrogPond_175_PhysicalSteps_V1/
@@ -70,10 +72,10 @@ jobs:
           set -euo pipefail
           python3 tools/package_v6.py
           test -s site/latest.json
-          test -s site/releases/v18.0.0-beta/frogpond.bin
+          test -s site/releases/v19.0.0-beta/frogpond.bin
       - uses: actions/upload-artifact@v4
         with:
-          name: frogpond-v18-settings-website
+          name: frogpond-v19-time-idle-website
           path: site/
       - uses: actions/configure-pages@v5
         with:

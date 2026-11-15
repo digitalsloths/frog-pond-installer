@@ -2,7 +2,7 @@
 """Package compiled ESP32-S3 firmware into an ESP Web Tools release."""
 from pathlib import Path
 import json, hashlib, shutil
-build=Path('build'); site=Path('site'); root=site/'releases'/'v13.0.0-beta'
+build=Path('build'); site=Path('site'); root=site/'releases'/'v14.0.0-beta'
 core=Path.home()/'.arduino15/packages/esp32/hardware/esp32/3.3.10'
 root.mkdir(parents=True,exist_ok=True)
 def one(pattern):
@@ -14,7 +14,7 @@ parts=[
 (one('*.partitions.bin'),'partitions.bin',0x8000),
 (core/'tools/partitions/boot_app0.bin','boot_app0.bin',0xe000),
 (one('*.ino.bin'),'frogpond.bin',0x10000)]
-manifest={'name':'Frog Pond V13 touch diagnostic - Waveshare ESP32-S3 AMOLED 1.75','version':'v13.0.0-beta',
+manifest={'name':'Frog Pond V14 visual polish - Waveshare ESP32-S3 AMOLED 1.75','version':'v14.0.0-beta',
 'new_install_prompt_erase':False,'builds':[{'chipFamily':'ESP32-S3','parts':[]}]}
 sha=[]
 for infile,name,offset in parts:
@@ -27,5 +27,5 @@ for infile,name,offset in parts:
     manifest['builds'][0]['parts'].append({'path':name,'offset':offset})
 (root/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
 (root/'SHA256SUMS.txt').write_text('\n'.join(sha)+'\n')
-(site/'latest.json').write_text(json.dumps({'version':'v13.0.0-beta','manifest':'releases/v13.0.0-beta/manifest.json'},indent=2)+'\n')
+(site/'latest.json').write_text(json.dumps({'version':'v14.0.0-beta','manifest':'releases/v14.0.0-beta/manifest.json'},indent=2)+'\n')
 print('Validated and packaged',[(name,(root/name).stat().st_size) for _,name,_ in parts])

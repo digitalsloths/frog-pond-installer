@@ -43,6 +43,23 @@ All eleven must launch with their original graphics, touch/tilt controls,
 correct sprite/PNG assets, audio and saved scores, and exit via the shared menu.
 Build and physical testing must preserve all existing Frog Pond features.
 
-Current status: sources, graphics modules, host compilation and original TAT
-packages imported/built. Frog Pond-compatible runtime and playable ports are
-NOT YET IMPLEMENTED. Production browser firmware remains V21.
+Current status: original sources, graphics modules, host compilation, and
+Xtensa TAT packages imported and validated. A native Arduino TAT API 1.3
+compatibility host now links all eleven original C game modules into one
+experimental Frog Pond firmware using static game descriptors.
+
+Implemented in the experimental branch:
+- Original indexed canvases (233x233 and 155x155), RGB565 presentation and rotation
+- Sprite PNG decoding, transparent sprites and original 5x7 font
+- Original game update/draw/enter/leave/unload lifecycle and game-scoped NVS saves
+- QMI8658 accelerometer/gyroscope samples and corrected CST9217 touch events
+- ES8311 stereo 16-kHz square/triangle/noise synthesis via a shared queued I2S task
+- Pause/restart/exit controls, original menu ordering and per-game assets
+- Game TAT API entry points for polar tables, sheets, banners and drawing
+
+Caveats: on-hardware playability and visual parity are NOT YET VERIFIED.
+Original in-game menu row rendering is replaced by Frog Pond's universal
+pause overlay; its menu functions are compatibility shims, not a complete
+replica of upstream console settings. The gyro orientation and precise
+touch/pause ergonomics need hardware testing. Production browser firmware
+remains V21; this branch intentionally does not deploy a public flasher.

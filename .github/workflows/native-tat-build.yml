@@ -1,0 +1,70 @@
+name: Experimental Frog Pond native original TAT runtime build
+on:
+  push:
+    branches: [feature/tilt-a-tron-original-engine]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-firmware:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reassemble current production Frog Pond V21 firmware
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fLS --retry 3 https://frog-pond-flasher.floot.app/_cdn/static/frogpond-v5-source.zip -o v5.zip
+          python3 tools/patch_v6.py v5.zip firmware
+          for v in {7..21}; do
+            python3 "tools/patch_v$v.py" firmware
+          done
+          python3 tools/patch_v22_native.py firmware
+      - uses: actions/checkout@v4
+        with:
+          repository: waveshareteam/ESP32-S3-Touch-AMOLED-1.75
+          path: vendor/waveshare
+      - name: Generate assets and all native original game sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          S=firmware/FrogPond_175_PhysicalSteps_V1
+          python3 tools/make_croak_header.py firmware
+          python3 tools/make_frog_hop_header.py firmware
+          python3 tools/make_isolated_hats.py "$S"
+          python3 tools/make_idle_frog_header.py "$S"
+          cp game_ports/frogpond_pause.h "$S"
+          cp vendor/waveshare/examples/arduino/08_ES8311/es8311.c "$S"
+          cp vendor/waveshare/examples/arduino/08_ES8311/es8311.h "$S"
+          cp vendor/waveshare/examples/arduino/08_ES8311/es8311_reg.h "$S"
+          mkdir -p /tmp/tat-upstream
+          curl -fLS --retry 3 https://codeload.github.com/PartiallyFrozen/tilt-a-tron/zip/e859d481604b86eeb40def6be552b4338ed0f21e -o /tmp/tat.zip
+          unzip -q /tmp/tat.zip -d /tmp/tat-upstream
+          UP=/tmp/tat-upstream/tilt-a-tron-e859d481604b86eeb40def6be552b4338ed0f21e
+          for slug in echo starfall radar maze racer tiltatris star pindrop breakout skatergirlz jump; do
+            cmp "upstream/tilt-a-tron/games/$slug/$slug.c" "$UP/games/$slug/$slug.c"
+          done
+          python3 tools/prepare_tat_native.py "$S" --upstream "$UP"
+          echo "=== Existing IMU / speaker integration points ==="
+          grep -niE 'QMI8658|accel|imu|gyro|i2s_write|i2s_channel_write|es8311_voice_volume_set' "$S"/*.ino | head -n 75 || true
+      - uses: arduino/setup-arduino-cli@v2
+      - name: Install ESP32 Arduino core 3.3.10
+        shell: bash
+        run: |
+          set -euo pipefail
+          arduino-cli core update-index --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          arduino-cli core install esp32:esp32@3.3.10 --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+      - name: Compile original 11 games with TAT bridge in Frog Pond firmware
+        shell: bash
+        run: |
+          set -euo pipefail
+          arduino-cli compile --fqbn 'esp32:esp32:esp32s3:FlashSize=16M,PartitionScheme=app3M_fat9M_16MB,PSRAM=opi' \
+            --libraries vendor/waveshare/examples/arduino/libraries \
+            --output-dir build firmware/FrogPond_175_PhysicalSteps_V1
+          test -s build/FrogPond_175_PhysicalSteps_V1.ino.bin
+          echo "Experimental native integration compiled; physical validation still required."
+      - uses: actions/upload-artifact@v4
+        with:
+          name: experimental-original-tat-integration-bin-do-not-flash-without-review
+          path: build/*.bin

@@ -21,6 +21,7 @@ jobs:
             python3 "tools/patch_v$v.py" firmware
           done
           python3 tools/patch_v22_native.py firmware
+          python3 tools/patch_v23_native.py firmware
       - uses: actions/checkout@v4
         with:
           repository: waveshareteam/ESP32-S3-Touch-AMOLED-1.75

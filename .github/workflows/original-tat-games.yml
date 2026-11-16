@@ -57,3 +57,53 @@ jobs:
         with:
           name: upstream-11-original-games-for-porting
           path: tilt-a-tron-original-sources.zip
+
+  original-packages:
+    needs: source-audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ESP32-S3 Xtensa toolchain
+        uses: arduino/setup-arduino-cli@v2
+      - name: Install Arduino ESP32 cross compiler
+        shell: bash
+        run: |
+          set -euo pipefail
+          arduino-cli core update-index --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          arduino-cli core install esp32:esp32@3.3.10 --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+      - name: Fetch pinned original game assets and manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/tilt-upstream
+          curl -fLS --retry 3 https://codeload.github.com/PartiallyFrozen/tilt-a-tron/zip/e859d481604b86eeb40def6be552b4338ed0f21e -o /tmp/tilt-pinned.zip
+          unzip -q /tmp/tilt-pinned.zip -d /tmp/tilt-upstream
+          UP=/tmp/tilt-upstream/tilt-a-tron-e859d481604b86eeb40def6be552b4338ed0f21e
+          for slug in echo starfall radar maze racer tiltatris star pindrop breakout skatergirlz jump; do
+            cmp "upstream/tilt-a-tron/games/$slug/$slug.c" "$UP/games/$slug/$slug.c"
+            cp "$UP/games/$slug/game.json" "upstream/tilt-a-tron/games/$slug/game.json"
+            cp "$UP/games/$slug/icon.png" "upstream/tilt-a-tron/games/$slug/icon.png"
+            if [ -d "$UP/games/$slug/assets" ]; then
+              cp -a "$UP/games/$slug/assets" "upstream/tilt-a-tron/games/$slug/assets"
+            fi
+          done
+      - name: Cross-compile and package all 11 original TAT games
+        shell: bash
+        run: |
+          set -euo pipefail
+          GCC=$(find "$HOME/.arduino15/packages/esp32/tools" -type f \( -name xtensa-esp-elf-gcc -o -name xtensa-esp32s3-elf-gcc \) | head -n 1)
+          test -x "$GCC"
+          echo "Cross compiler: $GCC"
+          mkdir -p packaged-tat
+          for slug in echo starfall radar maze racer tiltatris star pindrop breakout skatergirlz jump; do
+            python3 upstream/tilt-a-tron/tools/mktat.py "upstream/tilt-a-tron/games/$slug" --gcc "$GCC" \
+              --out "packaged-tat/$slug.tat" --work "build/tat/$slug"
+            test -s "packaged-tat/$slug.tat"
+            echo "Original TAT packaged: $slug"
+          done
+          ls -lh packaged-tat/*.tat
+          echo "WARNING: These require the original TAT runtime, not V21 Frog Pond."
+      - uses: actions/upload-artifact@v4
+        with:
+          name: all-11-original-tat-games
+          path: packaged-tat/*.tat

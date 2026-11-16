@@ -1,0 +1,27 @@
+name: Native TAT integration hardware symbols audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/tilt-a-tron-original-engine]
+permissions:
+  contents: read
+jobs:
+  audit-hardware:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect existing Frog Pond speaker and IMU hooks
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fLS --retry 3 https://frog-pond-flasher.floot.app/_cdn/static/frogpond-v5-source.zip -o /tmp/v5.zip
+          python3 tools/patch_v6.py /tmp/v5.zip firmware
+          for v in {7..21}; do python3 "tools/patch_v$v.py" firmware; done
+          F=firmware/FrogPond_175_PhysicalSteps_V1/FrogPond_175_PhysicalSteps_V1.ino
+          echo AUDIO_LINES
+          grep -niE 'i2s_|audio|codec|croak|play.*sound|play.*tone|pcm|speaker' "$F" | head -n 105 || true
+          echo AUDIO_REGION
+          sed -n '3500,3583p' "$F"
+          echo IMU_REGION
+          sed -n '1080,1120p' "$F"
+          sed -n '3575,3610p' "$F"

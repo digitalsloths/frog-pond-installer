@@ -65,6 +65,18 @@ jobs:
             --output-dir build firmware/FrogPond_175_PhysicalSteps_V1
           test -s build/FrogPond_175_PhysicalSteps_V1.ino.bin
           echo "Experimental native integration compiled; physical validation still required."
+      - name: Package local experimental browser flasher
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/package_native_test.py
+          test -s test-site/index.html
+          test -s test-site/manifest.json
+          test -s test-site/frogpond-native.bin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: experimental-native-tat-web-flasher
+          path: test-site/
       - uses: actions/upload-artifact@v4
         with:
           name: experimental-original-tat-integration-bin-do-not-flash-without-review

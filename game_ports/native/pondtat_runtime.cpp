@@ -67,7 +67,7 @@ static inline void put(tat_canvas* c,int x,int y,uint8_t col){
  if(c&&x>=0&&y>=0&&x<c->w&&y<c->w)c->pixels[y*c->w+x]=col;
 }
 static tat_color_t rgb(uint8_t r,uint8_t g,uint8_t b){return nativeRGB(r,g,b);}
-static void home(){if(exitToMenuFn)exitToMenuFn();}
+static void home(){pondtat::exitToMenu();}
 static void logGame(const char* fmt,...){
  char buf[256];va_list args;va_start(args,fmt);
  vsnprintf(buf,sizeof(buf),fmt,args);va_end(args);Serial.println(buf);
@@ -381,7 +381,7 @@ void frame(uint32_t now){
  if(dt<0)dt=0;
  lastFrame=now;
  if(game->update)game->update(dt);
- if(game->draw)game->draw();
+ if(game&&game->draw)game->draw();
  inputState.pressed=inputState.released=inputState.clicked=inputState.long_press=inputState.double_clicked=0;
  inputState.touch.pressed=inputState.touch.released=0;
  gestures={};
@@ -408,7 +408,8 @@ void touch(uint32_t now,bool down,int x,int y){
   if(pauseOverlay){pauseOverlay=false;return;}
   if(pauseControl.isPaused()){
    auto action=pauseControl.touchUp(touchLastX,touchLastY);
-   if(action==frogpond::GamePauseController::RESTART)restart();
+   if(action==frogpond::GamePauseController::RESUME){menuOpened=false;lastFrame=now;}
+   else if(action==frogpond::GamePauseController::RESTART)restart();
    else if(action==frogpond::GamePauseController::EXIT_TO_GAMES)exitToMenu();
    return;
   }

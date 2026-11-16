@@ -57,6 +57,9 @@ s=s.replace(anchor,'''  } else if (screen == TAT_ORIGINAL) {
     interval=85; redraw=changedScreen||now-prevFrameAt>=85;''',1)
 swap('    else if (screen == ECHO_GAME) echoDraw(now);',
 '''    else if (screen == TAT_ORIGINAL) {
+      float ax=0,ay=0,az=1;
+      if(imu.getAccelerometer(ax,ay,az))
+        pondtat::motion({ax,ay,az,0.0f,0.0f,0.0f});
       pondtat::frame(now);
       if(pondtat::paused())echoDrawPause();
     }

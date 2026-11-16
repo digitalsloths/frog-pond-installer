@@ -12,7 +12,7 @@ def swap(old,new,label):
  s=s.replace(old,new,1)
 
 swap('#include "frogpond_pause.h"',
-     '#include "frogpond_pause.h"\n#include "pondtat_runtime.h"',
+     '#include "frogpond_pause.h"\n#include "src/pondtat_runtime.h"',
      "host header")
 swap('constexpr Screen POCKET_WATCH=static_cast<Screen>(44);',
      'constexpr Screen POCKET_WATCH=static_cast<Screen>(44);\n'

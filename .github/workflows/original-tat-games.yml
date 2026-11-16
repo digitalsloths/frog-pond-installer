@@ -1,0 +1,59 @@
+name: Original Tilt-a-Tron game compatibility audit
+on:
+  push:
+    branches: [feature/tilt-a-tron-original-engine]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check original pinned upstream sources and assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/tat-pinned
+          curl -fLS --retry 3 \
+            https://codeload.github.com/PartiallyFrozen/tilt-a-tron/zip/e859d481604b86eeb40def6be552b4338ed0f21e \
+            -o /tmp/tat-sources.zip
+          unzip -q /tmp/tat-sources.zip -d /tmp/tat-pinned
+          UP=/tmp/tat-pinned/tilt-a-tron-e859d481604b86eeb40def6be552b4338ed0f21e
+          for slug in echo starfall radar maze racer tiltatris star pindrop breakout skatergirlz jump; do
+            cmp "upstream/tilt-a-tron/games/$slug/$slug.c" "$UP/games/$slug/$slug.c"
+            cp -r "$UP/games/$slug" "/tmp/tat-pinned/package-$slug"
+          done
+          cmp upstream/tilt-a-tron/LICENSE "$UP/LICENSE"
+          cmp upstream/tilt-a-tron/components/tat_api/include/tat/tat_api.h "$UP/components/tat_api/include/tat/tat_api.h"
+          echo "All 11 original game C sources verified byte-identical to pinned upstream commit."
+      - name: Compile all original game source units (host ABI inspection)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/tat-host-objects
+          for f in upstream/tilt-a-tron/games/*/*.c; do
+            name=$(basename "$(dirname "$f")")
+            gcc -std=gnu11 -O2 -Wall -Wextra \
+              -I upstream/tilt-a-tron/components/tat_api/include \
+              -c "$f" -o "/tmp/tat-host-objects/$name.o"
+            echo "Host C compile OK: $name"
+          done
+          echo "NOTE: Host compilation verifies syntax, not ESP32 linking or game playability."
+      - name: Bundle game sprites, icons, manifests, and originals
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p original-game-pack/games
+          cp upstream/tilt-a-tron/LICENSE original-game-pack/LICENSE
+          for folder in /tmp/tat-pinned/package-*; do
+            slug="${folder##*/package-}"
+            cp -a "$folder" "original-game-pack/games/$slug"
+          done
+          cp -a upstream/tilt-a-tron/components original-game-pack/
+          cp upstream/tilt-a-tron/docs/GAME_API.md original-game-pack/
+          (cd original-game-pack && zip -q -r ../tilt-a-tron-original-sources.zip .)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: upstream-11-original-games-for-porting
+          path: tilt-a-tron-original-sources.zip

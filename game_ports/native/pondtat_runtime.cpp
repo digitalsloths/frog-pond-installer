@@ -8,6 +8,7 @@
 #include <esp_system.h>
 #include <math.h>
 #include <algorithm>
+#include <climits>
 #include <vector>
 #include <stdarg.h>
 #include <stdio.h>
@@ -144,6 +145,7 @@ static void canvasPixel(tat_canvas_t* p,int x,int y,uint8_t col){put(cv(p),x,y,c
 static void canvasFillRect(tat_canvas_t* p,int x,int y,int w,int h,uint8_t col){
  if(!p||w<=0||h<=0)return;tat_canvas* c=cv(p);
  int x0=std::max(0,x),y0=std::max(0,y),x1=std::min(c->w,x+w),y1=std::min(c->w,y+h);
+ if(x1<=x0||y1<=y0)return;
  for(int row=y0;row<y1;row++)memset(c->pixels+row*c->w+x0,col,x1-x0);
 }
 static void canvasRect(tat_canvas_t* p,int x,int y,int w,int h,uint8_t col){
@@ -240,7 +242,7 @@ static void presentCanvas(tat_canvas_t* p,float angle){
 }
 static void canvasPresent(tat_canvas_t* c){presentCanvas(c,0);}
 static void canvasPresentRotated(tat_canvas_t* c,float a){presentCanvas(c,a);}
-static void menuOpen(){menuOpened=true;}
+static void menuOpen(){menuOpened=true;pauseControl.forcePause();}
 static void menuClose(){menuOpened=false;}
 static bool menuIsOpen(){return menuOpened;}
 static void menuInvalidate(){}
@@ -416,7 +418,8 @@ void touch(uint32_t now,bool down,int x,int y){
   int dx=touchLastX-touchStartX,dy=touchLastY-touchStartY;
   if(abs(dx)<35&&abs(dy)<35)gestures.tap=1;
   else if(abs(dx)>70&&abs(dx)>abs(dy)*1.3f){
-    gestures.swipe_left=dx<0;gestures.swipe_right=dx>0;
+    if(dx<0)pauseControl.forcePause();
+    else gestures.swipe_right=1;
   }
  }
 }
